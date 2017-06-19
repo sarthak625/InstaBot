@@ -5,17 +5,16 @@ import sys
 # -- Global Variables
 BASE_URL = 'https://api.instagram.com/v1/'
 
+
 # -- Functions
-# A function declaration to fetch user's self details
+# To fetch user's self details
 def self_info():
-    request_url = (BASE_URL + 'users/self/?access_token=%s') % (ACCESS_TOKEN)
-    my_info = requests.get(request_url).json()
     print "Profile"
     print "========================================="
     print 'Name --> '+my_info['data']['full_name']
     print 'Bio --> '+my_info['data']['bio']
 
-# A function to get another user's id
+# To get another user's id
 def user_info(user_name):
     print "Searching for "+user_name
     print "========================================="
@@ -28,8 +27,19 @@ def user_info(user_name):
         return -1
 
 
+# To get public posts of self
+def get_recent_post_id():
+    request_url = (BASE_URL+ 'users/self/media/recent/?access_token=%s')%(ACCESS_TOKEN)
+    public_posts = requests.get(request_url).json()
+    return public_posts['data'][0]['id']
+    #request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s')%(my_info['data']['id'],ACCESS_TOKEN)
+
+
 # -- Main
 
+print "Logging you in"
+request_url = (BASE_URL + 'users/self/?access_token=%s') % (ACCESS_TOKEN)
+my_info = requests.get(request_url).json()
 # Print user's details
 self_info()
 
