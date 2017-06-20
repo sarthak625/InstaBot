@@ -132,7 +132,22 @@ def get_recent_post_id_user(user_name):
 		print "Failed to view the post"
 		return -1;
 
-
+# Function to like a post
+def like_post():
+	user_name = raw_input('Enter the user whose post you want to like: ')
+	media_id = get_recent_post_id_user(user_name)
+	request_url = (BASE_URL + 'media/%s/likes') % (media_id)
+	payload = {'access_token': ACCESS_TOKEN}
+	print 'Liking the post: '+request_url
+	try:
+		post_a_like = requests.post(request_url,payload).json()
+		if post_a_like['meta']['code'] == 200:
+			print 'Like was successfull'
+		else:
+			print 'Your like was unsuccessfull. Try Again!!'
+	except:
+		print traceback.format_exc()
+	
 
 # -- Main
 print "Logging you in"
@@ -158,6 +173,7 @@ while True:
 	print "What do you want to do with " + user_name
 	print "1. Like a post"
 	print "2. Comment on a post"
+	print "6. Like a post"
 	print "7. Get self recent post id"
 	print "8. Get most recent post id"
 	print "9. Exit"
@@ -170,6 +186,8 @@ while True:
 			recent_id = get_recent_post_id_user(user_name)
 		if choice == 7:
 			recent_id = get_recent_post_id()
+		if choice == 6:
+			like_post()
 
 	except ValueError:
 		print "Not a valid choice. Please enter a number as your choice."
