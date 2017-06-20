@@ -181,7 +181,7 @@ def get_comments():
 	except:
 		print traceback.format_exc()
 		raw_input('Error fetching comments. Please try again!!') 
-get_comments()
+
 
 # Main
 #=====================================================
