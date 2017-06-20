@@ -101,6 +101,15 @@ def search_specific_criteria(recent_id,public_posts):
 
 	return recent_id 
 
+# To get recent media liked by the user
+def recent_media_liked():
+	request_url = (BASE_URL + 'users/self/media/liked?access_token=%s')%(ACCESS_TOKEN)
+	media = requests.get(request_url).json()
+	prompt = raw_input("Do you want to download your most recently liked post? Press y/n: ")
+	id = media['data'][0]['id']
+	if prompt.lower() == 'y':
+		download_post(id)
+	return id
 
 # To fetch another user's public posts
 def get_recent_post_id_user(user_name):
