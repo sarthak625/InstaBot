@@ -5,11 +5,13 @@ import urllib2
 import traceback
 
 # -- Global Variables
+#=====================================================
 
 BASE_URL = 'https://api.instagram.com/v1/'
 
 
 # -- Functions
+#=====================================================
 
 # To fetch user's self details
 def self_info():
@@ -114,6 +116,7 @@ def recent_media_liked():
 # To fetch another user's public posts
 def get_recent_post_id_user(user_name):
 	user_id = user_info(user_name)
+	print user_id
 	try:
 		request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s')%(user_id,ACCESS_TOKEN)
 		public_posts = requests.get(request_url).json()
@@ -155,10 +158,34 @@ def like_post():
 		else:
 			print 'Your like was unsuccessfull. Try Again!!'
 	except:
-		print traceback.format_exc()
+		print 'An error occured while liking the post. Please try again!!'
+		#print traceback.format_exc()
 	
+#Function to get comments from a post
+def get_comments():
+	user_name = raw_input('Enter the user whose post you want to fetch the list from: ')
+	media_id = get_recent_post_id_user(user_name)
+	
+	if media_id == -1:
+		return
+	try:
+		request_url = (BASE_URL + 'media/%s/comments?access_token=%s')%(media_id,ACCESS_TOKEN)
+		comments = requests.get(request_url).json()
+		comment_dict = {}
+		print "Comments"
+		print "====================================================="
+		for comment in comments['data']:
+			comment_dict[comment['text']] = comment['from']['username']
+			print comment['text']+" \n --------------------------"+comment['from']['username']
+			print '-----------------------------------------------------------'
+	except:
+		print traceback.format_exc()
+		raw_input('Error fetching comments. Please try again!!') 
+get_comments()
 
-# -- Main
+# Main
+#=====================================================
+
 print "Logging you in"
 request_url = (BASE_URL + 'users/self/?access_token=%s') % (ACCESS_TOKEN)
 my_info = requests.get(request_url).json()
@@ -200,4 +227,4 @@ while True:
 
 	except ValueError:
 		print "Not a valid choice. Please enter a number as your choice."
-		raw_input("Press Enter to continue.")
+		raw_input("Press Enter to continue.")	
