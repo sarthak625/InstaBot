@@ -26,12 +26,28 @@ def user_info(user_name):
     except IndexError:
         return -1
 
+#
+def download_post(media_id):
+    request_url = (BASE_URL + 'media/%s?access_token=%s') % (media_id, ACCESS_TOKEN)
+    recent_post = requests.get(request_url).json()
+    url = recent_post['data']['images']['standard_resolution']['url']
+    # Download the post
+    f = urllib2.urlopen(url)
+    file_name = url.split('/')[-1]
+    with open(file_name, "wb") as code:
+        code.write(f.read())
+    raw_input("The image has been downloaded. Press enter to continue. ")
 
 # To fetch public posts of self
 def get_recent_post_id():
     request_url = (BASE_URL+ 'users/self/media/recent/?access_token=%s')%(ACCESS_TOKEN)
     public_posts = requests.get(request_url).json()
+    prompt = raw_input("Do you want to download your most recent post? Press y/n: ")
+    id = public_posts['data'][0]['id']
+    if prompt.lower() == 'y':
+        download_post(id)
     return public_posts['data'][0]['id']
+
 
 # To fetch another user's public posts
 def get_recent_post_id_user(user_name):
@@ -40,7 +56,13 @@ def get_recent_post_id_user(user_name):
     try:
         request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s')%(user_id,ACCESS_TOKEN)
         public_posts = requests.get(request_url).json()
-        return public_posts['data'][0]['id']
+        recent_id = public_posts['data'][0]['id']
+        prompt = raw_input("Do you want to download the recent post by "+user_name+"? Press(y/n): ")
+        if prompt.lower() == 'y':
+            # If the recent post can be acquired, then download it
+            download_post(recent_id)
+        return recent_id
+
     except:
         print "You are not allowed to view the post of this user. This is probably because this account is private."
         return -1;
@@ -56,20 +78,22 @@ self_info()
 
 # User for which an action has to be performed
 user_name = raw_input("Enter a username: ")
+id = user_info(user_name)
+print "Searching for " + user_name
+print "============================================="
 
 # Options
 while True:
     # Searches for the user name within your sandbox
-    id = user_info(user_name)
-    print "Searching for " + user_name
-    print "========================================="
+
     if id == -1:
         print "The username could not be found. Please try Again: "
         break
-
+    print "============================================="
     print "What do you want to do with " + user_name
     print "1. Like a post"
     print "2. Comment on a post"
+    print "7. Get self recent post id"
     print "8. Get most recent post id"
     print "9. Exit"
     try:
@@ -79,16 +103,8 @@ while True:
             sys.exit()
         if choice == 8:
             recent_id = get_recent_post_id_user(user_name)
-            if recent_id!=-1:
-                # If the recent post can be acquired, then download it
-                req = (BASE_URL + 'media/%s?access_token=%s')%(recent_id,ACCESS_TOKEN)
-                recent_post = requests.get(req).json()
-                url = recent_post['data']['images']['standard_resolution']['url']
-                #Download the post
-                f = urllib2.urlopen(url)
-                file_name = url.split('/')[-1]
-                with open(file_name, "wb") as code:
-                    code.write(f.read())
+        if choice == 7:
+            recent_id = get_recent_post_id()
 
     except ValueError:
         print "Not a valid choice. Please enter a number as your choice."
