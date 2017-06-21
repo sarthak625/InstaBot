@@ -1,7 +1,12 @@
-import urllib2
-url = "https://s-media-cache-ak0.pinimg.com/originals/19/a3/a3/19a3a3f32d8601abe0cf7dad0b49293a.jpg"
+from KEYS import GOOGLE_API_KEY
+import requests
 
-f = urllib2.urlopen(url)
-file_name = url.split('/')[-1]
-with open(file_name, "wb") as code:
-    code.write(f.read())
+addr = raw_input("Enter the address: ")
+addr = addr.replace(' ','+')
+BASE_URL = 'https://maps.googleapis.com/maps/api/geocode/json?address='+addr+'&key='+GOOGLE_API_KEY
+coordinates = requests.get(BASE_URL).json()
+latitude = coordinates['results'][0]['geometry']['location']['lat']
+longitude = coordinates['results'][0]['geometry']['location']['lng']
+print latitude
+print longitude
+print BASE_URL

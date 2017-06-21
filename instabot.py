@@ -149,7 +149,9 @@ def like_post():
 	user_name = raw_input('Enter the user whose post you want to like: ')
 	media_id = get_recent_post_id_user(user_name)
 	request_url = (BASE_URL + 'media/%s/likes') % (media_id)
-	payload = {'access_token': ACCESS_TOKEN}
+	payload = {
+	'access_token': ACCESS_TOKEN
+	}
 	print 'Liking the post: '+request_url
 	try:
 		post_a_like = requests.post(request_url,payload).json()
@@ -182,7 +184,29 @@ def get_comments():
 		print traceback.format_exc()
 		raw_input('Error fetching comments. Please try again!!') 
 
-
+# Function to comment on a post
+def comment_on():
+	user_name = raw_input('Enter the user whose post you want to fetch the list from: ')
+	media_id = get_recent_post_id_user(user_name)
+	
+	if media_id == -1:
+		return
+	try:
+		request_url = (BASE_URL + 'media/%s/comments')%(media_id)
+		print request_url
+		comment = raw_input("Enter your comment: ")
+		payload = {
+		'access_token':ACCESS_TOKEN,
+		'text': comment
+		}
+		post_comment = requests.post(request_url,payload).json()
+		if post_comment['meta']['code']==200:
+			print "Successfully posted a comment"
+		else:
+			print "Failed to post the comment"
+	except:
+		print traceback.format_exc()
+comment_on()
 # Main
 #=====================================================
 
