@@ -24,6 +24,7 @@ def self_info():
 def user_info(user_name):
 	request_url = (BASE_URL + 'users/search?q=%s&access_token=%s')%(user_name,ACCESS_TOKEN)
 	user_details = requests.get(request_url).json()
+	print request_url
 	try:
 		user_id = user_details['data'][0]['id']
 		return user_id
@@ -116,9 +117,9 @@ def recent_media_liked():
 # To fetch another user's public posts
 def get_recent_post_id_user(user_name):
 	user_id = user_info(user_name)
-	print user_id
 	try:
 		request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s')%(user_id,ACCESS_TOKEN)
+		#print request_url
 		public_posts = requests.get(request_url).json()
 		recent_id = public_posts['data'][0]['id']
 		
@@ -178,7 +179,7 @@ def get_comments():
 		print "====================================================="
 		for comment in comments['data']:
 			comment_dict[comment['text']] = comment['from']['username']
-			print comment['text']+" \n --------------------------"+comment['from']['username']
+			print comment['text']+" \n =======>> "+comment['from']['username']
 			print '-----------------------------------------------------------'
 	except:
 		print traceback.format_exc()
@@ -193,7 +194,7 @@ def comment_on():
 		return
 	try:
 		request_url = (BASE_URL + 'media/%s/comments')%(media_id)
-		print request_url
+		#print request_url
 		comment = raw_input("Enter your comment: ")
 		payload = {
 		'access_token':ACCESS_TOKEN,
@@ -215,25 +216,38 @@ def img_natural_calamities():
 	addr = raw_input("Enter the address: ")
 	addr = addr.replace(' ','+').lower()
 	GOOGLE_BASE_URL = 'https://maps.googleapis.com/maps/api/geocode/json?address='+addr+'&key='+GOOGLE_API_KEY
+	
+	# Get the latitude and longitude of the location
 	try:
 		coordinates = requests.get(GOOGLE_BASE_URL).json()
+		latitude = coordinates['results'][0]['geometry']['location']['lat']
+		longitude = coordinates['results'][0]['geometry']['location']['lng']
 	except:
 		#print traceback.format_exc()
 		print "There was some error returning the coordinates of your location."
 		return
-	latitude = coordinates['results'][0]['geometry']['location']['lat']
-	longitude = coordinates['results'][0]['geometry']['location']['lng']
+	
+	# Get all the media at that location
 	print 'Searching at lat: '+str(latitude)+" , lng:"+str(longitude)
 	try:
 		request_url = (BASE_URL + 'media/search?lat=%s&lng=%s&access_token=%s')%(str(latitude),str(longitude),ACCESS_TOKEN)
+		search_media = requests.get(request_url).json()
+		keywords = ['disaster','earthquake','flood','calamit','landslide','tsunami','cyclone','avalanche','typhoon']
+		count = 0
+		for media in search_media['data']:
+			for keyword in keywords:
+				if keyword in media['caption']:
+					download_post(media['id'])
+					count+=1
+		raw_input(str(count)+" posts found regarding disaster.")
+		
 	except:
 		#print traceback.format_exc()
 		print "There was some error fetching your posts."
 		return
-	search_media = requests.get(request_url).json()
-	print search_media
-
-img_natural_calamities()
+	
+	
+#img_natural_calamities()
 
 
 # Main
@@ -253,21 +267,32 @@ while True:
 	print "============================================="
 	print "1. Like a post"
 	print "2. Comment on a post"
-	print "6. Like a post"
-	print "7. Get self recent post id"
-	print "8. Get most recent post id"
-	print "9. Exit"
+	print "3. Get recent post id of self"
+	print "4. Get recent post id of a user"
+	print "5. View comments"
+	print "6. Get images based on a location on natural calamities"
+	print "7. Exit"
 	try:
 		choice = int(raw_input("Enter your choice: "))
-		if (choice == 9):
+		if choice == 1:
+			like_post()
+		elif choice==2:
+			comment_on()
+		elif choice == 3:
+			get_recent_post_id()
+		elif choice == 4:
+			user_name = raw_input("Enter the name of the user:")
+			recent_id = get_recent_post_id_user(user_name)
+			print recent_id
+		elif choice == 5:
+			get_comments()
+		elif choice == 6:
+			img_natural_calamities()
+		elif choice == 7:
 			print "The application will now terminate! Bbyee!!!"
 			sys.exit()
-		if choice == 8:
-			recent_id = get_recent_post_id_user(user_name)
-		if choice == 7:
-			recent_id = get_recent_post_id()
-		if choice == 6:
-			like_post()
+		else:
+			print "Invalid Choice!!"
 
 	except ValueError:
 		print "Not a valid choice. Please enter a number as your choice."
