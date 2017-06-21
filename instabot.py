@@ -1,4 +1,5 @@
 from KEYS import ACCESS_TOKEN
+from KEYS import GOOGLE_API_KEY
 import requests
 import sys
 import urllib2
@@ -8,7 +9,6 @@ import traceback
 #=====================================================
 
 BASE_URL = 'https://api.instagram.com/v1/'
-
 
 # -- Functions
 #=====================================================
@@ -206,7 +206,36 @@ def comment_on():
 			print "Failed to post the comment"
 	except:
 		print traceback.format_exc()
-comment_on()
+
+
+# ---------------------------------------------------------
+#				IMAGES OF NATURAL CALAMITIES
+# ---------------------------------------------------------
+def img_natural_calamities():
+	addr = raw_input("Enter the address: ")
+	addr = addr.replace(' ','+').lower()
+	GOOGLE_BASE_URL = 'https://maps.googleapis.com/maps/api/geocode/json?address='+addr+'&key='+GOOGLE_API_KEY
+	try:
+		coordinates = requests.get(GOOGLE_BASE_URL).json()
+	except:
+		#print traceback.format_exc()
+		print "There was some error returning the coordinates of your location."
+		return
+	latitude = coordinates['results'][0]['geometry']['location']['lat']
+	longitude = coordinates['results'][0]['geometry']['location']['lng']
+	print 'Searching at lat: '+str(latitude)+" , lng:"+str(longitude)
+	try:
+		request_url = (BASE_URL + 'media/search?lat=%s&lng=%s&access_token=%s')%(str(latitude),str(longitude),ACCESS_TOKEN)
+	except:
+		#print traceback.format_exc()
+		print "There was some error fetching your posts."
+		return
+	search_media = requests.get(request_url).json()
+	print search_media
+
+img_natural_calamities()
+
+
 # Main
 #=====================================================
 
@@ -217,20 +246,11 @@ my_info = requests.get(request_url).json()
 # Print user's details
 self_info()
 
-# User for which an action has to be performed
-user_name = raw_input("Enter a username: ")
-id = user_info(user_name)
-print "Searching for " + user_name
-print "============================================="
-
 # Options
 while True:
-	# Searches for the user name within your sandbox
-	if id == -1:
-		print "The username could not be found. Please try Again: "
-		break
 	print "============================================="
-	print "What do you want to do with " + user_name
+	print "================== M E N U =================="
+	print "============================================="
 	print "1. Like a post"
 	print "2. Comment on a post"
 	print "6. Like a post"
